@@ -18,17 +18,50 @@
     <form>
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Título *</mat-label>
-        <input matInput [(ngModel)]="livro.titulo" name="titulo" placeholder="Digite o título" />
+        <input
+          matInput
+          [(ngModel)]="livro.titulo"
+          (ngModelChange)="onTextFieldChange('titulo')"
+          name="titulo"
+          placeholder="Digite o título"
+          [maxlength]="255"
+        />
+        <mat-hint align="end">{{ getTextLength('titulo') }}/255</mat-hint>
+        @if (fieldErrors().titulo) {
+          <mat-error>{{ fieldErrors().titulo }}</mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Autor *</mat-label>
-        <input matInput [(ngModel)]="livro.autor" name="autor" placeholder="Digite o autor" />
+        <input
+          matInput
+          [(ngModel)]="livro.autor"
+          (ngModelChange)="onTextFieldChange('autor')"
+          name="autor"
+          placeholder="Digite o autor"
+          [maxlength]="255"
+        />
+        <mat-hint align="end">{{ getTextLength('autor') }}/255</mat-hint>
+        @if (fieldErrors().autor) {
+          <mat-error>{{ fieldErrors().autor }}</mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>ISBN *</mat-label>
-        <input matInput [(ngModel)]="livro.isbn" name="isbn" placeholder="Digite o ISBN" />
+        <input
+          matInput
+          [(ngModel)]="livro.isbn"
+          (ngModelChange)="onTextFieldChange('isbn')"
+          name="isbn"
+          placeholder="Digite o ISBN"
+          [maxlength]="255"
+        />
+        <mat-hint align="end">{{ getTextLength('isbn') }}/255</mat-hint>
+        @if (fieldErrors().isbn) {
+          <mat-error>{{ fieldErrors().isbn }}</mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">

@@ -11,12 +11,32 @@
   <div class="filtros">
     <mat-form-field appearance="outline">
       <mat-label>Título</mat-label>
-      <input matInput [(ngModel)]="filtro.titulo" placeholder="Buscar por título" />
+      <input
+        matInput
+        [(ngModel)]="filtro.titulo"
+        (ngModelChange)="onFilterInputChange('titulo')"
+        [maxlength]="255"
+        placeholder="Buscar por título"
+      />
+      <mat-hint align="end">{{ getFieldLength('titulo') }}/255</mat-hint>
+      @if (fieldErrors().titulo) {
+        <mat-error>{{ fieldErrors().titulo }}</mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Autor</mat-label>
-      <input matInput [(ngModel)]="filtro.autor" placeholder="Buscar por autor" />
+      <input
+        matInput
+        [(ngModel)]="filtro.autor"
+        (ngModelChange)="onFilterInputChange('autor')"
+        [maxlength]="255"
+        placeholder="Buscar por autor"
+      />
+      <mat-hint align="end">{{ getFieldLength('autor') }}/255</mat-hint>
+      @if (fieldErrors().autor) {
+        <mat-error>{{ fieldErrors().autor }}</mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="outline">
@@ -34,6 +54,12 @@
       Buscar
     </button>
   </div>
+
+  @if (filterErrorMessage()) {
+    <div class="filter-error-message" aria-live="polite">
+      {{ filterErrorMessage() }}
+    </div>
+  }
 
   @if (loading()) {
   <div class="loading">

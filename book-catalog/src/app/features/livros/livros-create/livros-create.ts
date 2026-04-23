@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
@@ -32,17 +33,20 @@ export interface LivrosCreateDialogData {
     ],
     templateUrl: './livros-create.html',
     styleUrl: './livros-create.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LivrosCreate implements OnInit {
     private readonly livroService = inject(LivroService);
     private readonly generoService = inject(GeneroService);
     private readonly dialogRef = inject(MatDialogRef<LivrosCreate>);
+    private readonly maxTextLength = 255;
     readonly data = inject(MAT_DIALOG_DATA, { optional: true }) as LivrosCreateDialogData | null;
 
     generos = signal<SelectItem<number>[]>([]);
     carregando = signal(false);
     salvando = signal(false);
     erro = signal<string | null>(null);
+    fieldErrors = signal<Partial<Record<keyof LivroFormRequest, string>>>({});
 
     livro: LivroFormRequest = {
         titulo: '',
@@ -98,6 +102,8 @@ export class LivrosCreate implements OnInit {
     }
 
     async salvar() {
+        this.normalizarCamposTexto();
+
         if (!this.validar()) {
             this.erro.set('Preencha todos os campos obrigatórios.');
             return;
@@ -118,7 +124,7 @@ export class LivrosCreate implements OnInit {
                 action: this.isEdicao ? 'updated' : 'created',
             });
         } catch (error) {
-            this.erro.set(this.isEdicao ? 'Erro ao atualizar livro.' : 'Erro ao cadastrar livro.');
+            this.handleSaveError(error);
             console.error(error);
         } finally {
             this.salvando.set(false);
@@ -129,7 +135,42 @@ export class LivrosCreate implements OnInit {
         this.dialogRef.close(false);
     }
 
+    onTextFieldChange(field: 'titulo' | 'autor' | 'isbn') {
+        const currentErrors = { ...this.fieldErrors() };
+        delete currentErrors[field];
+        this.fieldErrors.set(currentErrors);
+
+        if (!Object.keys(currentErrors).length) {
+            this.erro.set(null);
+        }
+    }
+
+    getTextLength(field: 'titulo' | 'autor' | 'isbn') {
+        return this.livro[field]?.length ?? 0;
+    }
+
     private validar(): boolean {
+        const fieldErrors: Partial<Record<keyof LivroFormRequest, string>> = {};
+
+        if ((this.livro.titulo?.length ?? 0) > this.maxTextLength) {
+            fieldErrors.titulo = `Título não pode ter mais de ${this.maxTextLength} caracteres`;
+        }
+
+        if ((this.livro.autor?.length ?? 0) > this.maxTextLength) {
+            fieldErrors.autor = `Autor não pode ter mais de ${this.maxTextLength} caracteres`;
+        }
+
+        if ((this.livro.isbn?.length ?? 0) > this.maxTextLength) {
+            fieldErrors.isbn = `ISBN não pode ter mais de ${this.maxTextLength} caracteres`;
+        }
+
+        this.fieldErrors.set(fieldErrors);
+
+        if (Object.keys(fieldErrors).length) {
+            this.erro.set('Revise os campos informados e tente novamente.');
+            return false;
+        }
+
         return !!(
             this.livro.titulo &&
             this.livro.autor &&
@@ -138,5 +179,29 @@ export class LivrosCreate implements OnInit {
             this.livro.preco &&
             this.livro.generoId
         );
+    }
+
+    private normalizarCamposTexto() {
+        this.livro = {
+            ...this.livro,
+            titulo: this.livro.titulo.trim(),
+            autor: this.livro.autor.trim(),
+            isbn: this.livro.isbn.trim(),
+        };
+    }
+
+    private handleSaveError(error: unknown) {
+        if (error instanceof HttpErrorResponse && error.status === 400) {
+            const apiError = error.error as {
+                message?: string;
+                fieldErrors?: Partial<Record<keyof LivroFormRequest, string>>;
+            };
+
+            this.erro.set(apiError.message ?? 'Erro de validação nos dados enviados.');
+            this.fieldErrors.set(apiError.fieldErrors ?? {});
+            return;
+        }
+
+        this.erro.set(this.isEdicao ? 'Erro ao atualizar livro.' : 'Erro ao cadastrar livro.');
     }
 }

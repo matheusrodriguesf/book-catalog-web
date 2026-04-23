@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -31,11 +32,13 @@ import { ConfirmDialog } from '../../../shared/components/confirm-dialog/confirm
   ],
   templateUrl: './livros-list.html',
   styleUrl: './livros-list.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LivrosList implements OnInit {
   private readonly livroService = inject(LivroService);
   private readonly generoService = inject(GeneroService);
   private readonly dialog = inject(MatDialog);
+  private readonly maxFilterLength = 255;
 
   readonly displayedColumns = ['titulo', 'autor', 'genero', 'acoes'];
 
@@ -46,6 +49,8 @@ export class LivrosList implements OnInit {
   pageSize = signal(10);
   pageIndex = signal(0);
   loading = signal(false);
+  filterErrorMessage = signal<string | null>(null);
+  fieldErrors = signal<Partial<Record<'titulo' | 'autor', string>>>({});
 
   filtro: LivroFilter = {};
 
@@ -56,6 +61,12 @@ export class LivrosList implements OnInit {
   }
 
   async buscar(resetPage = true) {
+    this.normalizeFilterValues();
+
+    if (!this.validateFilters()) {
+      return;
+    }
+
     if (resetPage) this.pageIndex.set(0);
     this.loading.set(true);
     try {
@@ -66,8 +77,21 @@ export class LivrosList implements OnInit {
       );
       this.livros.set(resp.content);
       this.totalElements.set(resp.totalElements);
+      this.clearValidationState();
+    } catch (error) {
+      this.handleSearchError(error);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  onFilterInputChange(field: 'titulo' | 'autor') {
+    const currentErrors = { ...this.fieldErrors() };
+    delete currentErrors[field];
+    this.fieldErrors.set(currentErrors);
+
+    if (!currentErrors.titulo && !currentErrors.autor) {
+      this.filterErrorMessage.set(null);
     }
   }
 
@@ -141,5 +165,64 @@ export class LivrosList implements OnInit {
         await this.buscar();
       }
     });
+  }
+
+  getFieldLength(field: 'titulo' | 'autor') {
+    return this.filtro[field]?.length ?? 0;
+  }
+
+  private normalizeFilterValues() {
+    this.filtro = {
+      ...this.filtro,
+      titulo: this.normalizeValue(this.filtro.titulo),
+      autor: this.normalizeValue(this.filtro.autor),
+    };
+  }
+
+  private normalizeValue(value?: string) {
+    const normalizedValue = value?.trim();
+    return normalizedValue ? normalizedValue : undefined;
+  }
+
+  private validateFilters() {
+    const fieldErrors: Partial<Record<'titulo' | 'autor', string>> = {};
+
+    if ((this.filtro.titulo?.length ?? 0) > this.maxFilterLength) {
+      fieldErrors.titulo = `Título não pode ter mais de ${this.maxFilterLength} caracteres`;
+    }
+
+    if ((this.filtro.autor?.length ?? 0) > this.maxFilterLength) {
+      fieldErrors.autor = `Autor não pode ter mais de ${this.maxFilterLength} caracteres`;
+    }
+
+    this.fieldErrors.set(fieldErrors);
+
+    if (Object.keys(fieldErrors).length > 0) {
+      this.filterErrorMessage.set('Revise os filtros informados e tente novamente.');
+      return false;
+    }
+
+    this.filterErrorMessage.set(null);
+    return true;
+  }
+
+  private clearValidationState() {
+    this.filterErrorMessage.set(null);
+    this.fieldErrors.set({});
+  }
+
+  private handleSearchError(error: unknown) {
+    if (error instanceof HttpErrorResponse && error.status === 400) {
+      const apiError = error.error as {
+        message?: string;
+        fieldErrors?: Partial<Record<'titulo' | 'autor', string>>;
+      };
+
+      this.filterErrorMessage.set(apiError.message ?? 'Erro de validação nos filtros informados.');
+      this.fieldErrors.set(apiError.fieldErrors ?? {});
+      return;
+    }
+
+    this.filterErrorMessage.set('Não foi possível realizar a busca. Tente novamente em instantes.');
   }
 }
