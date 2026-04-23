@@ -1,0 +1,68 @@
+@if (loading()) {
+<div class="dialog-loading">
+  <mat-spinner diameter="48" />
+</div>
+}
+
+
+@if (erro()) {
+<mat-dialog-content>
+  <p class="erro">{{ erro() }}</p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="fechar()">Fechar</button>
+</mat-dialog-actions>
+}
+
+
+@if (livro(); as l) {
+<div class="dialog-header">
+  <div class="header-info">
+    <div class="book-icon">
+      <mat-icon>menu_book</mat-icon>
+    </div>
+    <div>
+      <h2 mat-dialog-title>{{ l.titulo }}</h2>
+      <p class="autor">{{ l.autor }}</p>
+    </div>
+  </div>
+  <button mat-icon-button (click)="fechar()" class="close-btn">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<mat-divider />
+
+<mat-dialog-content>
+  <mat-chip-set class="genero-chip">
+    <mat-chip>{{ l.genero }}</mat-chip>
+  </mat-chip-set>
+
+  <ul class="info-list">
+    <li>
+      <span class="label">
+        <mat-icon>qr_code</mat-icon> ISBN
+      </span>
+      <span>{{ l.isbn }}</span>
+    </li>
+    <li>
+      <span class="label">
+        <mat-icon>calendar_today</mat-icon> Ano de Publicação
+      </span>
+      <span>{{ l.anoPublicacao }}</span>
+    </li>
+    <li>
+      <span class="label">
+        <mat-icon>attach_money</mat-icon> Preço
+      </span>
+      <span class="preco">{{ l.preco | currency:'BRL' }}</span>
+    </li>
+  </ul>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-flat-button (click)="fechar()">
+    Fechar
+  </button>
+</mat-dialog-actions>
+}

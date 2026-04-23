@@ -1,0 +1,71 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Cadastrar Novo Livro</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    @if (erro()) {
+      <div class="erro-message">
+        {{ erro() }}
+      </div>
+    }
+
+    <form>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Título *</mat-label>
+        <input matInput [(ngModel)]="livro.titulo" name="titulo" placeholder="Digite o título" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Autor *</mat-label>
+        <input matInput [(ngModel)]="livro.autor" name="autor" placeholder="Digite o autor" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>ISBN *</mat-label>
+        <input matInput [(ngModel)]="livro.isbn" name="isbn" placeholder="Digite o ISBN" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Gênero *</mat-label>
+        <mat-select [(ngModel)]="livro.generoId" name="genero">
+          <mat-option [value]="null">-- Selecionar --</mat-option>
+          @for (genero of generos(); track genero.value) {
+            <mat-option [value]="genero.value">{{ genero.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Ano de Publicação *</mat-label>
+        <input
+          matInput
+          type="number"
+          [(ngModel)]="livro.anoPublicacao"
+          name="anoPublicacao"
+          placeholder="Ano"
+        />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Preço *</mat-label>
+        <input matInput type="number" [(ngModel)]="livro.preco" name="preco" step="0.01" />
+      </mat-form-field>
+    </form>
+  </mat-card-content>
+
+  <mat-card-actions>
+    <button mat-button (click)="fechar()">Cancelar</button>
+    <button mat-raised-button color="primary" (click)="salvar()" [disabled]="loading()">
+      @if (loading()) {
+        <mat-spinner diameter="20" />
+        Salvando...
+      } @else {
+        <ng-container>
+          <mat-icon>save</mat-icon>
+          Salvar
+        </ng-container>
+      }
+    </button>
+  </mat-card-actions>
+</mat-card>

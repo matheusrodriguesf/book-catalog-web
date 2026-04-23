@@ -1,0 +1,91 @@
+<div class="livros-container">
+
+  <div class="header">
+    <h1>Livros</h1>
+    <button mat-raised-button color="primary" (click)="abrirFormularioCadastro()">
+      <mat-icon>add</mat-icon>
+      Cadastrar Novo Livro
+    </button>
+  </div>
+
+  <div class="filtros">
+    <mat-form-field appearance="outline">
+      <mat-label>Título</mat-label>
+      <input matInput [(ngModel)]="filtro.titulo" placeholder="Buscar por título" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Autor</mat-label>
+      <input matInput [(ngModel)]="filtro.autor" placeholder="Buscar por autor" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Gênero</mat-label>
+      <mat-select [(ngModel)]="selectedValue" (selectionChange)="filtro.genero = $event.value">
+        <mat-option [value]="null">-- Selecionar --</mat-option>
+        @for (genero of generos(); track genero.value) {
+        <mat-option [value]="genero.label">{{ genero.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-flat-button (click)="buscar()">
+      <mat-icon>search</mat-icon>
+      Buscar
+    </button>
+  </div>
+
+  @if (loading()) {
+  <div class="loading">
+    <mat-spinner diameter="40" />
+  </div>
+  }
+
+  @if (!loading()) {
+  <table mat-table [dataSource]="livros()">
+
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef>#</th>
+      <td mat-cell *matCellDef="let livro">{{ livro.id }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="titulo">
+      <th mat-header-cell *matHeaderCellDef>Título</th>
+      <td mat-cell *matCellDef="let livro">{{ livro.titulo }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="autor">
+      <th mat-header-cell *matHeaderCellDef>Autor</th>
+      <td mat-cell *matCellDef="let livro">{{ livro.autor }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="genero">
+      <th mat-header-cell *matHeaderCellDef>Gênero</th>
+      <td mat-cell *matCellDef="let livro">{{ livro.genero }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="acoes">
+      <th mat-header-cell *matHeaderCellDef>Ações</th>
+      <td mat-cell *matCellDef="let livro">
+        <button mat-icon-button (click)="verDetalhes(livro.id)" title="Ver detalhes">
+          <mat-icon>visibility</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell" [attr.colspan]="displayedColumns.length" style="text-align:center; padding: 24px;">
+        Nenhum livro encontrado.
+      </td>
+    </tr>
+
+  </table>
+
+  <mat-paginator [length]="totalElements()" [pageSize]="pageSize()" [pageIndex]="pageIndex()"
+    [pageSizeOptions]="[5, 10, 25, 50]" (page)="onPageChange($event)" showFirstLastButtons />
+  }
+
+</div>

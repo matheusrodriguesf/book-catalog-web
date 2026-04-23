@@ -1,0 +1,49 @@
+.livros-container {
+  padding: 24px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 500;
+    }
+
+    button {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+  }
+
+  .filtros {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+
+    mat-form-field {
+      flex: 1;
+      min-width: 180px;
+    }
+  }
+
+  .loading {
+    display: flex;
+    justify-content: center;
+    padding: 40px 0;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  mat-paginator {
+    margin-top: 8px;
+  }
+}
