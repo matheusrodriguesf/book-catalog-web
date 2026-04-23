@@ -15,37 +15,8 @@ export interface ConfirmDialogData {
   selector: 'app-confirm-dialog',
   standalone: true,
   imports: [MatDialogModule, MatButtonModule, MatIconModule],
-  template: `
-    <h2 mat-dialog-title>{{ data.titel }}</h2>
-    <mat-dialog-content>
-      <p>{{ data.mensagem }}</p>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="cancelar()">
-        {{ data.botaoCancelar || 'Cancelar' }}
-      </button>
-      <button
-        mat-raised-button
-        [color]="data.isDangerous ? 'warn' : 'primary'"
-        (click)="confirmar()"
-      >
-        {{ data.botaoConfirmar || 'Confirmar' }}
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: [
-    `
-      mat-dialog-content {
-        padding: 16px 24px;
-        min-width: 320px;
-      }
-
-      p {
-        margin: 0;
-        color: #666;
-      }
-    `,
-  ],
+  templateUrl: './confirm-dialog.html',
+  styleUrl: './confirm-dialog.scss',
 })
 export class ConfirmDialog {
   private readonly dialogRef = inject(MatDialogRef<ConfirmDialog>);
