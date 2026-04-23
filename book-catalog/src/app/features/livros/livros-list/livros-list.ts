@@ -133,7 +133,7 @@ export class LivrosList implements OnInit {
     const dialogRef = this.dialog.open(ConfirmDialog, {
       width: '400px',
       data: {
-        titel: 'Excluir Livro',
+        title: 'Excluir Livro',
         mensagem: `Deseja realmente excluir o livro "${titulo}"? Esta ação não pode ser desfeita.`,
         botaoCancelar: 'Cancelar',
         botaoConfirmar: 'Excluir',

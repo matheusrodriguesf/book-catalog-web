@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
 export interface ConfirmDialogData {
-  titel: string;
+  title?: string;
   mensagem: string;
   botaoCancelar?: string;
   botaoConfirmar?: string;
@@ -20,7 +20,11 @@ export interface ConfirmDialogData {
 })
 export class ConfirmDialog {
   private readonly dialogRef = inject(MatDialogRef<ConfirmDialog>);
-  readonly data = inject(MAT_DIALOG_DATA);
+  readonly data = inject<ConfirmDialogData>(MAT_DIALOG_DATA);
+
+  get dialogTitle() {
+    return this.data.title || 'Confirmação';
+  }
 
   confirmar() {
     this.dialogRef.close(true);
