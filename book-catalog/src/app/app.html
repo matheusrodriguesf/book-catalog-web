@@ -1,1 +1,18 @@
-<router-outlet />
+<div class="app-shell">
+	<header class="top-menu" aria-label="Menu principal">
+		<nav class="menu-links">
+			<a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">
+				Home
+			</a>
+			<a routerLink="/livros" routerLinkActive="is-active">Livros</a>
+		</nav>
+	</header>
+
+	<main class="app-content">
+		<router-outlet />
+	</main>
+
+	<footer class="footer">
+		<p>© {{ currentYear }} • PoC Angular 21 • Book Catalog</p>
+	</footer>
+</div>
