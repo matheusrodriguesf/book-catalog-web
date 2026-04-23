@@ -1,6 +1,6 @@
 <mat-card>
   <mat-card-header>
-    <mat-card-title>Cadastrar Novo Livro</mat-card-title>
+    <mat-card-title>{{ tituloDialogo }}</mat-card-title>
   </mat-card-header>
 
   <mat-card-content>
@@ -10,6 +10,11 @@
       </div>
     }
 
+    @if (carregando()) {
+      <div class="loading-state">
+        <mat-spinner diameter="40" />
+      </div>
+    } @else {
     <form>
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Título *</mat-label>
@@ -29,7 +34,7 @@
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Gênero *</mat-label>
         <mat-select [(ngModel)]="livro.generoId" name="genero">
-          <mat-option [value]="null">-- Selecionar --</mat-option>
+          <mat-option [value]="0">-- Selecionar --</mat-option>
           @for (genero of generos(); track genero.value) {
             <mat-option [value]="genero.value">{{ genero.label }}</mat-option>
           }
@@ -52,18 +57,21 @@
         <input matInput type="number" [(ngModel)]="livro.preco" name="preco" step="0.01" />
       </mat-form-field>
     </form>
+    }
   </mat-card-content>
 
   <mat-card-actions>
     <button mat-button (click)="fechar()">Cancelar</button>
-    <button mat-raised-button color="primary" (click)="salvar()" [disabled]="loading()">
-      @if (loading()) {
-        <mat-spinner diameter="20" />
-        Salvando...
+    <button mat-raised-button color="primary" (click)="salvar()" [disabled]="carregando() || salvando()">
+      @if (salvando()) {
+        <ng-container>
+          <mat-spinner diameter="20" />
+          {{ isEdicao ? 'Atualizando...' : 'Salvando...' }}
+        </ng-container>
       } @else {
         <ng-container>
-          <mat-icon>save</mat-icon>
-          Salvar
+          <mat-icon>{{ isEdicao ? 'edit' : 'save' }}</mat-icon>
+          {{ textoAcao }}
         </ng-container>
       }
     </button>

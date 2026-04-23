@@ -67,9 +67,17 @@
     <ng-container matColumnDef="acoes">
       <th mat-header-cell *matHeaderCellDef>Ações</th>
       <td mat-cell *matCellDef="let livro">
-        <button mat-icon-button (click)="verDetalhes(livro.id)" title="Ver detalhes">
-          <mat-icon>visibility</mat-icon>
-        </button>
+        <div class="acoes-cell">
+          <button mat-icon-button (click)="verDetalhes(livro.id)" title="Ver detalhes" aria-label="Ver detalhes do livro">
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button mat-icon-button (click)="editarLivro(livro.id)" title="Editar livro" aria-label="Editar livro">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button (click)="excluirLivro(livro.id, livro.titulo)" title="Excluir livro" aria-label="Excluir livro">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
       </td>
     </ng-container>
 

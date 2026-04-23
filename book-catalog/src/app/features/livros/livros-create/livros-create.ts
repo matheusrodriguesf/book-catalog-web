@@ -1,18 +1,21 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { LivroService } from '../../../services/livro.service';
 import { GeneroService } from '../../../services/genero.service';
 import { SelectItem } from '../../../models/select-item';
 import { LivroFormRequest } from '../../../models/livro-form-request';
+
+export interface LivrosCreateDialogData {
+    id?: number;
+}
 
 @Component({
     selector: 'app-livros-create',
@@ -25,7 +28,6 @@ import { LivroFormRequest } from '../../../models/livro-form-request';
         MatFormFieldModule,
         MatInputModule,
         MatSelectModule,
-        MatSlideToggleModule,
         MatProgressSpinnerModule,
     ],
     templateUrl: './livros-create.html',
@@ -35,9 +37,11 @@ export class LivrosCreate implements OnInit {
     private readonly livroService = inject(LivroService);
     private readonly generoService = inject(GeneroService);
     private readonly dialogRef = inject(MatDialogRef<LivrosCreate>);
+    readonly data = inject(MAT_DIALOG_DATA, { optional: true }) as LivrosCreateDialogData | null;
 
-    generos = signal<SelectItem<string>[]>([]);
-    loading = signal(false);
+    generos = signal<SelectItem<number>[]>([]);
+    carregando = signal(false);
+    salvando = signal(false);
     erro = signal<string | null>(null);
 
     livro: LivroFormRequest = {
@@ -49,12 +53,47 @@ export class LivrosCreate implements OnInit {
         generoId: 0,
     };
 
+    get isEdicao(): boolean {
+        return typeof this.data?.id === 'number';
+    }
+
+    get tituloDialogo(): string {
+        return this.isEdicao ? 'Atualizar Livro' : 'Cadastrar Novo Livro';
+    }
+
+    get textoAcao(): string {
+        return this.isEdicao ? 'Atualizar' : 'Salvar';
+    }
+
     async ngOnInit() {
+        this.carregando.set(true);
+        this.erro.set(null);
+
         try {
             const generos = await this.generoService.allGeneros();
-            this.generos.set(generos);
+            this.generos.set(generos as SelectItem<number>[]);
+
+            if (this.data?.id) {
+                const details = await this.livroService.getLivroDetails(this.data.id);
+                const generoSelecionado = generos.find((genero) => genero.label === details.genero);
+
+                this.livro = {
+                    titulo: details.titulo,
+                    autor: details.autor,
+                    isbn: details.isbn,
+                    anoPublicacao: details.anoPublicacao,
+                    preco: details.preco,
+                    generoId: generoSelecionado?.value ?? 0,
+                };
+            }
         } catch {
-            this.erro.set('Não foi possível carregar os gêneros.');
+            this.erro.set(
+                this.isEdicao
+                    ? 'Não foi possível carregar os dados do livro.'
+                    : 'Não foi possível carregar os gêneros.'
+            );
+        } finally {
+            this.carregando.set(false);
         }
     }
 
@@ -64,15 +103,25 @@ export class LivrosCreate implements OnInit {
             return;
         }
 
-        this.loading.set(true);
+        this.salvando.set(true);
+        this.erro.set(null);
+
         try {
-            await this.livroService.createLivro(this.livro);
-            this.dialogRef.close(true);
+            if (this.data?.id) {
+                await this.livroService.updateLivro(this.data.id, this.livro);
+            } else {
+                await this.livroService.createLivro(this.livro);
+            }
+
+            this.dialogRef.close({
+                saved: true,
+                action: this.isEdicao ? 'updated' : 'created',
+            });
         } catch (error) {
-            this.erro.set('Erro ao cadastrar livro.');
+            this.erro.set(this.isEdicao ? 'Erro ao atualizar livro.' : 'Erro ao cadastrar livro.');
             console.error(error);
         } finally {
-            this.loading.set(false);
+            this.salvando.set(false);
         }
     }
 

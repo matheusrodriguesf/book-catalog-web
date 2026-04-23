@@ -61,6 +61,14 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
+  <button mat-button (click)="editar()">
+    <mat-icon>edit</mat-icon>
+    Editar
+  </button>
+  <button mat-button color="warn" (click)="excluir()">
+    <mat-icon>delete</mat-icon>
+    Excluir
+  </button>
   <button mat-flat-button (click)="fechar()">
     Fechar
   </button>

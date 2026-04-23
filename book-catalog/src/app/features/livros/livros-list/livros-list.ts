@@ -14,6 +14,7 @@ import { LivroFilter } from '../../../models/livro-filter';
 import { LivroResponse } from '../../../models/livro-response';
 import { GeneroService } from '../../../services/genero.service';
 import { SelectItem } from '../../../models/select-item';
+import { ConfirmDialog } from '../../../shared/components/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-livros-list',
@@ -39,7 +40,7 @@ export class LivrosList implements OnInit {
   readonly displayedColumns = ['id', 'titulo', 'autor', 'genero', 'acoes'];
 
   livros = signal<LivroResponse[]>([]);
-  generos = signal<SelectItem<string>[]>([]);
+  generos = signal<SelectItem<number>[]>([]);
   selectedValue = signal<string | null>(null);
   totalElements = signal(0);
   pageSize = signal(10);
@@ -78,9 +79,54 @@ export class LivrosList implements OnInit {
 
   async verDetalhes(id: number) {
     const { LivrosDetails } = await import('../livros-details/livros-details');
-    this.dialog.open(LivrosDetails, {
+    const dialogRef = this.dialog.open(LivrosDetails, {
       width: '480px',
       data: { id },
+    });
+
+    dialogRef.afterClosed().subscribe(async (resultado) => {
+      if (resultado?.saved) {
+        await this.buscar(false);
+      }
+    });
+  }
+
+  async editarLivro(id: number) {
+    const { LivrosCreate } = await import('../livros-create/livros-create');
+    const dialogRef = this.dialog.open(LivrosCreate, {
+      width: '480px',
+      data: { id },
+    });
+
+    dialogRef.afterClosed().subscribe(async (resultado) => {
+      if (resultado?.saved) {
+        await this.buscar(false);
+      }
+    });
+  }
+
+  async excluirLivro(id: number, titulo: string) {
+    const dialogRef = this.dialog.open(ConfirmDialog, {
+      width: '400px',
+      data: {
+        titel: 'Excluir Livro',
+        mensagem: `Deseja realmente excluir o livro "${titulo}"? Esta ação não pode ser desfeita.`,
+        botaoCancelar: 'Cancelar',
+        botaoConfirmar: 'Excluir',
+        isDangerous: true,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe(async (confirmou) => {
+      if (confirmou) {
+        await this.livroService.deleteLivro(id);
+
+        if (this.livros().length === 1 && this.pageIndex() > 0) {
+          this.pageIndex.update((pageIndexAtual) => pageIndexAtual - 1);
+        }
+
+        await this.buscar(false);
+      }
     });
   }
 
@@ -91,7 +137,7 @@ export class LivrosList implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(async (resultado) => {
-      if (resultado) {
+      if (resultado?.saved) {
         await this.buscar();
       }
     });

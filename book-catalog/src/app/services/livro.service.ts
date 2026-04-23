@@ -34,4 +34,14 @@ export class LivroService {
   createLivro(livro: LivroFormRequest): Promise<LivroResponse> {
     return firstValueFrom(this.http.post<LivroResponse>(this.baseUrl, livro));
   }
+
+  updateLivro(id: number, livro: LivroFormRequest): Promise<LivroResponse> {
+    const url = `${this.baseUrl}/${id}`;
+    return firstValueFrom(this.http.put<LivroResponse>(url, livro));
+  }
+
+  deleteLivro(id: number): Promise<void> {
+    const url = `${this.baseUrl}/${id}`;
+    return firstValueFrom(this.http.delete<void>(url));
+  }
 }

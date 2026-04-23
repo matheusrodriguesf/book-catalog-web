@@ -43,6 +43,12 @@
     width: 100%;
   }
 
+  .acoes-cell {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   mat-paginator {
     margin-top: 8px;
   }

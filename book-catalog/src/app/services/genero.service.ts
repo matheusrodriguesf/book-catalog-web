@@ -11,14 +11,14 @@ export class GeneroService {
   private readonly baseUrl = '/api/generos';
   private readonly http = inject(HttpClient);
 
-  allGeneros(): Promise<SelectItem<string>[]> {
+  allGeneros(): Promise<SelectItem<number>[]> {
     return firstValueFrom(
       this.http.get<any[]>(this.baseUrl).pipe(
         map((data) => {
           console.log('Generos recebidos:', data);
           if (Array.isArray(data) && data.every((item) => typeof item === 'string')) {
-            return data.map((genero) => ({
-              value: genero,
+            return data.map((genero, index) => ({
+              value: index + 1,
               label: genero,
             }));
           }

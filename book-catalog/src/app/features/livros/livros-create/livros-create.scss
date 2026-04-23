@@ -7,6 +7,12 @@ mat-card-header {
   margin-bottom: 20px;
 }
 
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
 form {
   display: flex;
   flex-direction: column;
