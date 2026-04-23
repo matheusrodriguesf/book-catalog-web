@@ -37,7 +37,7 @@ export class LivrosList implements OnInit {
   private readonly generoService = inject(GeneroService);
   private readonly dialog = inject(MatDialog);
 
-  readonly displayedColumns = ['id', 'titulo', 'autor', 'genero', 'acoes'];
+  readonly displayedColumns = ['titulo', 'autor', 'genero', 'acoes'];
 
   livros = signal<LivroResponse[]>([]);
   generos = signal<SelectItem<number>[]>([]);
